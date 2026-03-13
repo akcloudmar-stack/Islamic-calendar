@@ -1,2 +1,0 @@
-# Islamic-calendar
-Islamic calendar
