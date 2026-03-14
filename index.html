@@ -1,257 +1,324 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Islamic Calendar</title>
+<title>Islamic & Gregorian Calendar</title>
 
 <style>
 
 body{
-font-family:Arial, sans-serif;
-margin:0;
-background:#eef2ef;
+font-family:Arial;
+background:#f4f6f8;
 text-align:center;
 }
 
-header{
-background:#1e7a4a;
-color:white;
-padding:16px;
-font-size:24px;
-font-weight:bold;
+h1{
+margin-top:10px;
 }
 
-.container{
-max-width:420px;
+#todayBox{
+background:white;
+padding:10px;
+border-radius:10px;
+width:380px;
 margin:auto;
-padding:15px;
-}
-
-.hijri-date{
-font-size:18px;
-margin:10px 0;
-color:#1e7a4a;
-}
-
-.month-nav{
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin:10px 0;
-}
-
-.month-nav button{
-background:#1e7a4a;
-border:none;
-color:white;
-padding:8px 14px;
-border-radius:5px;
-font-size:16px;
+margin-bottom:10px;
+box-shadow:0 2px 5px rgba(0,0,0,0.2);
 }
 
 .calendar{
-display:grid;
-grid-template-columns:repeat(7,1fr);
-gap:6px;
-margin-top:10px;
-}
-
-.day-name{
-font-weight:bold;
-padding:6px;
-}
-
-.day{
+width:380px;
+margin:auto;
 background:white;
-padding:12px 5px;
-border-radius:6px;
-box-shadow:0 1px 3px rgba(0,0,0,0.1);
+padding:10px;
+border-radius:10px;
+box-shadow:0 2px 5px rgba(0,0,0,0.2);
+}
+
+.controls{
+display:flex;
+justify-content:space-between;
+margin-bottom:10px;
+}
+
+select,button{
+padding:5px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th{
+background:#2c7be5;
+color:white;
+padding:5px;
+}
+
+td{
+height:70px;
+border:1px solid #eee;
+vertical-align:top;
+padding:4px;
+}
+
+.greg{
+font-weight:bold;
+font-size:14px;
+}
+
+.hijri{
+color:#777;
+font-size:10px;
+margin-top:6px;
+display:block;
 }
 
 .today{
-background:#1e7a4a;
-color:white;
-font-weight:bold;
+background:#ffeaa7;
+border:2px solid #f39c12;
 }
 
-.section{
+.holidays{
+margin-top:20px;
+width:380px;
+margin-left:auto;
+margin-right:auto;
 background:white;
-margin-top:18px;
-padding:12px;
-border-radius:8px;
-box-shadow:0 1px 3px rgba(0,0,0,0.1);
-text-align:left;
-}
-
-.section h3{
-margin-top:0;
-color:#1e7a4a;
-}
-
-.countdown{
-font-weight:bold;
-color:#1e7a4a;
-margin-top:10px;
+padding:10px;
+border-radius:10px;
+box-shadow:0 2px 5px rgba(0,0,0,0.2);
 }
 
 </style>
-
 </head>
 
 <body>
 
-<header>Islamic Calendar</header>
+<h1>Islamic Calendar</h1>
 
-<div class="container">
+<div id="todayBox"></div>
 
-<div class="hijri-date" id="hijriDate"></div>
+<div class="calendar">
 
-<div class="month-nav">
-<button onclick="prevMonth()">◀</button>
-<h3 id="monthTitle"></h3>
-<button onclick="nextMonth()">▶</button>
+<div class="controls">
+<button onclick="changeMonth(-1)">◀</button>
+
+<select id="monthSelect"></select>
+<select id="yearSelect"></select>
+
+<button onclick="changeMonth(1)">▶</button>
 </div>
 
-<div class="calendar" id="calendar"></div>
+<table>
 
-<div class="countdown" id="ramadanCountdown"></div>
+<thead>
+<tr>
+<th>Sun</th>
+<th>Mon</th>
+<th>Tue</th>
+<th>Wed</th>
+<th>Thu</th>
+<th>Fri</th>
+<th>Sat</th>
+</tr>
+</thead>
 
-<div class="section">
-<h3>Islamic Events</h3>
-<ul>
-<li>1 Muharram – Islamic New Year</li>
-<li>10 Muharram – Ashura</li>
-<li>12 Rabi al-Awwal – Mawlid</li>
-<li>1 Ramadan – Start of Ramadan</li>
-<li>1 Shawwal – Eid al-Fitr</li>
-<li>10 Dhul Hijjah – Eid al-Adha</li>
-</ul>
-</div>
+<tbody id="calendarBody"></tbody>
 
-<div class="section">
-<h3>Prayer Times</h3>
-<p>Fajr: 05:00</p>
-<p>Dhuhr: 12:30</p>
-<p>Asr: 15:45</p>
-<p>Maghrib: 18:20</p>
-<p>Isha: 19:45</p>
-</div>
+</table>
 
 </div>
+
+
+<div class="holidays">
+
+<h3>Important Islamic Holidays</h3>
+
+<p>
+1 Ramadan – Start of Ramadan<br>
+27 Ramadan – Laylat al-Qadr (approx)<br>
+1 Shawwal – Eid al-Fitr<br>
+8 Dhul Hijjah – Start of Hajj<br>
+9 Dhul Hijjah – Day of Arafah<br>
+10 Dhul Hijjah – Eid al-Adha<br>
+1 Muharram – Islamic New Year<br>
+10 Muharram – Ashura
+</p>
+
+</div>
+
 
 <script>
 
-function getHijriDate(){
-
-const today=new Date();
-
-const hijri=new Intl.DateTimeFormat(
-'en-TN-u-ca-islamic',
-{day:'numeric',month:'long',year:'numeric'}
-).format(today);
-
-document.getElementById("hijriDate").innerText=
-"Today: "+hijri;
-
-}
-
-const hijriMonths=[
-"Muharram",
-"Safar",
-"Rabi al-Awwal",
-"Rabi al-Thani",
-"Jumada al-Ula",
-"Jumada al-Thani",
-"Rajab",
-"Sha'ban",
-"Ramadan",
-"Shawwal",
-"Dhul Qa'dah",
-"Dhul Hijjah"
+const monthNames=[
+"January","February","March","April","May","June",
+"July","August","September","October","November","December"
 ];
 
-let currentMonth=new Date().getMonth()%12;
-let currentYear=1447;
+let today=new Date();
+let currentMonth=today.getMonth();
+let currentYear=today.getFullYear();
 
-function generateCalendar(){
+function getHijri(date){
 
-const calendar=document.getElementById("calendar");
-calendar.innerHTML="";
+let hijri=new Intl.DateTimeFormat('en-TN-u-ca-islamic',{
+day:'numeric',
+month:'long',
+year:'numeric'
+}).format(date);
 
-document.getElementById("monthTitle").innerText=
-hijriMonths[currentMonth]+" "+currentYear;
+return hijri;
 
-const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+}
 
-days.forEach(d=>{
-let el=document.createElement("div");
-el.className="day-name";
-el.innerText=d;
-calendar.appendChild(el);
+function renderCalendar(){
+
+let firstDay=new Date(currentYear,currentMonth,1).getDay();
+let daysInMonth=new Date(currentYear,currentMonth+1,0).getDate();
+
+let body="";
+
+let date=1;
+
+for(let i=0;i<6;i++){
+
+let row="<tr>";
+
+for(let j=0;j<7;j++){
+
+if(i===0 && j<firstDay){
+
+row+="<td></td>";
+
+}
+
+else if(date>daysInMonth){
+
+break;
+
+}
+
+else{
+
+let d=new Date(currentYear,currentMonth,date);
+let hijri=getHijri(d);
+
+let className="";
+
+if(
+date===today.getDate() &&
+currentMonth===today.getMonth() &&
+currentYear===today.getFullYear()
+){
+className="today";
+}
+
+row+=`
+<td class="${className}">
+<div class="greg">${date}</div>
+<div class="hijri">${hijri}</div>
+</td>
+`;
+
+date++;
+
+}
+
+}
+
+row+="</tr>";
+
+body+=row;
+
+}
+
+document.getElementById("calendarBody").innerHTML=body;
+
+}
+
+function populateSelectors(){
+
+let m=document.getElementById("monthSelect");
+
+monthNames.forEach((month,i)=>{
+
+let opt=document.createElement("option");
+opt.value=i;
+opt.text=month;
+
+if(i===currentMonth)opt.selected=true;
+
+m.appendChild(opt);
+
 });
 
-for(let i=1;i<=30;i++){
+m.onchange=function(){
 
-let day=document.createElement("div");
-day.className="day";
-day.innerText=i;
+currentMonth=parseInt(this.value);
+renderCalendar();
 
-if(i===new Date().getDate()){
-day.classList.add("today");
+};
+
+let y=document.getElementById("yearSelect");
+
+for(let i=1900;i<=2100;i++){
+
+let opt=document.createElement("option");
+
+opt.value=i;
+opt.text=i;
+
+if(i===currentYear)opt.selected=true;
+
+y.appendChild(opt);
+
 }
 
-calendar.appendChild(day);
+y.onchange=function(){
+
+currentYear=parseInt(this.value);
+renderCalendar();
+
+};
 
 }
 
-}
+function changeMonth(step){
 
-function prevMonth(){
-
-currentMonth--;
+currentMonth+=step;
 
 if(currentMonth<0){
 currentMonth=11;
 currentYear--;
 }
 
-generateCalendar();
-
-}
-
-function nextMonth(){
-
-currentMonth++;
-
 if(currentMonth>11){
 currentMonth=0;
 currentYear++;
 }
 
-generateCalendar();
+document.getElementById("monthSelect").value=currentMonth;
+document.getElementById("yearSelect").value=currentYear;
+
+renderCalendar();
 
 }
 
-function ramadanCountdown(){
+function showToday(){
 
-const today=new Date();
+let g=today.toDateString();
+let h=getHijri(today);
 
-const ramadan=new Date(today.getFullYear(),2,1);
-
-const diff=Math.floor(
-(ramadan-today)/(1000*60*60*24)
-);
-
-document.getElementById("ramadanCountdown").innerText=
-"Days until Ramadan: "+diff;
+document.getElementById("todayBox").innerHTML=
+"<b>Today</b><br>"+g+"<br>"+h;
 
 }
 
-getHijriDate();
-generateCalendar();
-ramadanCountdown();
+populateSelectors();
+renderCalendar();
+showToday();
 
 </script>
 
