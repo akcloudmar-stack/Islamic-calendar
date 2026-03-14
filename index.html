@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -6,6 +7,7 @@
 <title>Islamic Calendar</title>
 
 <style>
+
 body{
 font-family:Arial, sans-serif;
 margin:0;
@@ -27,6 +29,12 @@ margin:auto;
 padding:15px;
 }
 
+.hijri-date{
+font-size:18px;
+margin:10px 0;
+color:#1e7a4a;
+}
+
 .month-nav{
 display:flex;
 justify-content:space-between;
@@ -41,7 +49,6 @@ color:white;
 padding:8px 14px;
 border-radius:5px;
 font-size:16px;
-cursor:pointer;
 }
 
 .calendar{
@@ -82,6 +89,13 @@ text-align:left;
 margin-top:0;
 color:#1e7a4a;
 }
+
+.countdown{
+font-weight:bold;
+color:#1e7a4a;
+margin-top:10px;
+}
+
 </style>
 
 </head>
@@ -92,14 +106,17 @@ color:#1e7a4a;
 
 <div class="container">
 
-<h3 id="monthTitle"></h3>
+<div class="hijri-date" id="hijriDate"></div>
 
 <div class="month-nav">
 <button onclick="prevMonth()">◀</button>
+<h3 id="monthTitle"></h3>
 <button onclick="nextMonth()">▶</button>
 </div>
 
 <div class="calendar" id="calendar"></div>
+
+<div class="countdown" id="ramadanCountdown"></div>
 
 <div class="section">
 <h3>Islamic Events</h3>
@@ -113,19 +130,50 @@ color:#1e7a4a;
 </ul>
 </div>
 
+<div class="section">
+<h3>Prayer Times</h3>
+<p>Fajr: 05:00</p>
+<p>Dhuhr: 12:30</p>
+<p>Asr: 15:45</p>
+<p>Maghrib: 18:20</p>
+<p>Isha: 19:45</p>
+</div>
+
 </div>
 
 <script>
 
-const months=[
-"Muharram","Safar","Rabi al-Awwal","Rabi al-Thani",
-"Jumada al-Ula","Jumada al-Thani","Rajab",
-"Sha'ban","Ramadan","Shawwal",
-"Dhul Qa'dah","Dhul Hijjah"
+function getHijriDate(){
+
+const today=new Date();
+
+const hijri=new Intl.DateTimeFormat(
+'en-TN-u-ca-islamic',
+{day:'numeric',month:'long',year:'numeric'}
+).format(today);
+
+document.getElementById("hijriDate").innerText=
+"Today: "+hijri;
+
+}
+
+const hijriMonths=[
+"Muharram",
+"Safar",
+"Rabi al-Awwal",
+"Rabi al-Thani",
+"Jumada al-Ula",
+"Jumada al-Thani",
+"Rajab",
+"Sha'ban",
+"Ramadan",
+"Shawwal",
+"Dhul Qa'dah",
+"Dhul Hijjah"
 ];
 
-let currentMonth=new Date().getMonth();
-let currentYear=new Date().getFullYear();
+let currentMonth=new Date().getMonth()%12;
+let currentYear=1447;
 
 function generateCalendar(){
 
@@ -133,7 +181,7 @@ const calendar=document.getElementById("calendar");
 calendar.innerHTML="";
 
 document.getElementById("monthTitle").innerText=
-months[currentMonth%12]+" "+currentYear;
+hijriMonths[currentMonth]+" "+currentYear;
 
 const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
@@ -144,47 +192,66 @@ el.innerText=d;
 calendar.appendChild(el);
 });
 
-let daysInMonth=
-new Date(currentYear,currentMonth+1,0).getDate();
-
-for(let i=1;i<=daysInMonth;i++){
+for(let i=1;i<=30;i++){
 
 let day=document.createElement("div");
 day.className="day";
 day.innerText=i;
 
-if(
-i===new Date().getDate() &&
-currentMonth===new Date().getMonth() &&
-currentYear===new Date().getFullYear()
-){
+if(i===new Date().getDate()){
 day.classList.add("today");
 }
 
 calendar.appendChild(day);
+
 }
 
 }
 
 function prevMonth(){
+
 currentMonth--;
+
 if(currentMonth<0){
 currentMonth=11;
 currentYear--;
 }
+
 generateCalendar();
+
 }
 
 function nextMonth(){
+
 currentMonth++;
+
 if(currentMonth>11){
 currentMonth=0;
 currentYear++;
 }
-generateCalendar();
-}
 
 generateCalendar();
+
+}
+
+function ramadanCountdown(){
+
+const today=new Date();
+
+const ramadan=new Date(today.getFullYear(),2,1);
+
+const diff=Math.floor(
+(ramadan-today)/(1000*60*60*24)
+);
+
+document.getElementById("ramadanCountdown").innerText=
+"Days until Ramadan: "+diff;
+
+}
+
+getHijriDate();
+generateCalendar();
+ramadanCountdown();
 
 </script>
 
